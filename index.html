@@ -3,12 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0;url=https://digdow125-ux.github.io/Rianderblog/">
+  <meta name="description" content="RIANDERBLOG — your gateway to global shopping.">
   <title>RIANDERBLOG — Global Marketplace</title>
-  <link rel="canonical" href="https://digdow125-ux.github.io/Rianderblog/">
-  <script>window.location.replace("https://digdow125-ux.github.io/Rianderblog/");</script>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#071a33;color:#fff;font-family:Arial,sans-serif;text-align:center}
+    main{max-width:620px;padding:32px}
+    h1{letter-spacing:2px;color:#e2b84b}
+    p{line-height:1.7;color:#d7dfeb}
+    a{display:inline-block;margin-top:16px;padding:14px 24px;border-radius:8px;background:#e2b84b;color:#071a33;text-decoration:none;font-weight:bold}
+  </style>
 </head>
 <body>
-  <p>Opening RIANDERBLOG… <a href="https://digdow125-ux.github.io/Rianderblog/">Continue to the marketplace</a>.</p>
+  <main>
+    <h1>RIANDERBLOG</h1>
+    <p>Your gateway to global shopping.</p>
+    <a href="https://digdow125-ux.github.io/Rianderblog/">Visit the Marketplace</a>
+  </main>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/service-worker.js')
+          .catch(function (error) { console.error('Service worker registration failed:', error); });
+      });
+    }
+  </script>
 </body>
 </html>
