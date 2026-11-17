@@ -1582,6 +1582,34 @@ nav{position:relative !important;display:flex !important;flex-direction:row !imp
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9070950205970050"
      crossorigin="anonymous"></script>
 <meta name="google-adsense-account" content="ca-pub-9070950205970050">
+
+<style id="riander-product-photo-polish">
+/* Product photo presentation: preserve original image and catalogue arrangement */
+#productList .product-card-open{
+  display:flex;flex-direction:column;gap:8px;
+}
+#productList .product-card-open img{
+  width:100%;height:clamp(150px,18vw,220px);
+  object-fit:contain;object-position:center;
+  box-sizing:border-box;padding:12px;
+  background:linear-gradient(145deg,#fff 0%,#f5f7fb 55%,#edf1f7 100%);
+  border:1px solid #e7ebf2;border-radius:13px;
+  filter:drop-shadow(0 5px 7px rgba(16,35,65,.12));
+  image-rendering:auto;transition:transform .22s ease,filter .22s ease;
+}
+#productList .product-card-open:hover img{
+  transform:scale(1.025);
+  filter:drop-shadow(0 8px 12px rgba(16,35,65,.17));
+}
+#productList .product-image-placeholder{
+  min-height:150px;border:1px solid #e7ebf2;border-radius:13px;
+  background:linear-gradient(145deg,#fff,#edf1f7);
+}
+@media(max-width:650px){
+ #productList .product-card-open img{height:clamp(125px,37vw,170px);padding:9px}
+}
+</style>
+
 </head>
 <body>
 <div class="topbar">A WORLD OF DISCOVERY • SHOP PRODUCTS FROM INTERNATIONAL SELLERS</div>
