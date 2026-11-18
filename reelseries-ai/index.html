@@ -32,22 +32,78 @@ async function openSeries(id){selectedSeries=cachedSeries.find(s=>s.id===id);if(
 
 // Title-first episode draft builder. This saves a structured draft; it does not call an external AI model.
 function buildEpisodeDraft(title,genre,duration,style,voice,format){
- const dark=genre==='horror', mystery=genre==='mystery', fantasy=genre==='fantasy', adventure=genre==='adventure', comedy=genre==='comedy';
- const setting=dark?'a remote village where the night hides something alive':mystery?'a quiet town hiding a carefully buried secret':fantasy?'an ancient kingdom where forbidden magic has returned':adventure?'a dangerous frontier beyond the known world':'an unfamiliar place where an unexpected problem changes everything';
- const threat=dark?'a presence that imitates familiar voices':mystery?'a clue that contradicts every witness':fantasy?'a power that demands a terrible price':adventure?'a discovery that puts the entire journey at risk':'a misunderstanding that grows into a chaotic chain of events';
- const beats=[
- ['COLD OPEN','Begin with a striking image from the most dangerous moment. Tease the central question without revealing the answer.'],
- ['THE WORLD','Introduce the main character, the setting, and the unusual rule or problem that shapes this story.'],
- ['THE WARNING','A trusted person reveals one important warning. The main character has a reason to ignore it.'],
- ['THE DISCOVERY','The main character finds evidence of '+threat+'. Raise the stakes with a new detail.'],
- ['THE CONFRONTATION','The character makes a choice. Show the consequence through action, sound, and a strong visual reveal.'],
- ['CLIFFHANGER','End on a surprising discovery that changes what the audience thought was happening. Leave one urgent question unanswered.']
- ];
- const mins=Math.max(1,Math.round(Number(duration)/60)); const per=Math.round(Number(duration)/beats.length);
- let out=title.toUpperCase()+'\n'+genre.toUpperCase()+' · '+duration+' seconds · '+style+' · '+voice+' · '+format+' format\n\n';
- out+='SERIES PREMISE\n'+title+' follows a central character drawn into '+setting+'. The mystery escalates when they encounter '+threat+'. Each episode reveals one piece of the truth while opening a more dangerous question.\n\n';
- beats.forEach((b,i)=>{out+=('SCENE '+(i+1)+' — '+b[0]+' ('+Math.floor(i*per/60)+':'+String(i*per%60).padStart(2,'0')+')\n');out+='VISUAL: '+(i===0?'A cinematic establishing shot of '+setting+'.':i===1?'Introduce the protagonist in a detailed anime close-up, then reveal the environment.':i===2?'A tense conversation in a dimly lit location; use expressive character animation.':i===3?'A clue appears in the environment; build tension with close-ups and slow camera movement.':i===4?'Fast cuts, dramatic movement, and a clear emotional reaction.':'A final unsettling image, then cut to black.')+'\n';out+='NARRATION: '+(i===0?'Some stories begin with a warning. This one begins when '+title+' becomes impossible to ignore.':i===1?'In '+setting+', one person is about to discover that ordinary life was only a disguise.':'Every answer creates another question. As the truth comes closer, the danger becomes impossible to ignore.')+'\n\n';});
- out+='PRODUCTION NOTES\nKeep character appearance, clothing, locations, and colour palette consistent across scenes. Use cinematic anime framing, clear emotional expressions, atmospheric sound design, and readable pacing. End with a cliffhanger that naturally leads into Episode 2.\n';
+ const isDarkness=title.toLowerCase().includes('darkness taste');
+ if(isDarkness){
+  return `THE DARKNESS TASTE — EPISODE 1
+THE VILLAGE THAT NEVER SLEEPS
+Supernatural horror · 180 seconds · Chinese dark fantasy anime · Bella female narrator · ${format} format
+
+SERIES PREMISE
+In the mountain village of Heiyue, a voice calls every villager by name after midnight. Anyone who answers vanishes. Mei Lin returns after seven years and discovers that the village's oldest warning was never a superstition.
+
+CHARACTER CONTINUITY
+MEI LIN: 19, long black hair, pale blue traditional jacket, red thread bracelet; brave but grieving.
+GRANDMOTHER: elderly, silver hair in a tight bun, dark plum robe, carries a small brass lantern.
+THE SHADOW: unnaturally tall figure with a blurred face; it can imitate the voice of anyone its victim loves.
+Keep these designs identical in every scene and future episode.
+
+SCENE 1 — THE RULE (00:00–00:25)
+VISUAL: Aerial shot of an ancient Chinese mountain village buried in blue-black fog. Red lanterns sway although there is no wind. Every wooden window is sealed. At the far end of the street, a tall silhouette stands beneath a dead tree.
+SFX: distant temple bell, wind through bamboo, three soft knocks.
+BELLA: “In Heiyue village, nobody opens a window after midnight. Not for a friend. Not for family. Not even for the voice of someone who has been dead for years. Because in Heiyue… the darkness remembers your name.”
+ON SCREEN: HEIYUE VILLAGE — MIDNIGHT
+
+SCENE 2 — THE RETURN (00:25–00:55)
+VISUAL: Mei Lin steps from a carriage at the village gate. Her blue jacket is wet with rain. Villagers silently close their doors as she passes. She reaches her grandmother's house; a brass lantern burns beside the entrance.
+BELLA: “Mei Lin had been away for seven years. She returned believing the old village had changed. But the people watched her as if she had brought something terrible home with her.”
+GRANDMOTHER: “You should not have come back.”
+MEI LIN: “I came to see you.”
+GRANDMOTHER: “Then you must listen. Tonight, whatever you hear… do not answer.”
+
+SCENE 3 — THE WARNING (00:55–01:25)
+VISUAL: Close-up of the grandmother locking the wooden shutters and tying a red cord around the latch. Candlelight trembles across old protective symbols carved into the door.
+GRANDMOTHER: “When the clock strikes twelve, it will call from outside. First, it uses the voice of a stranger. Then someone you trust.”
+MEI LIN: “What if it sounds like my mother?”
+The grandmother's hands stop moving.
+GRANDMOTHER, whispering: “Your mother died seven years ago. If you hear her tonight, do not open the window. Do not speak. And whatever happens… do not look behind you.”
+BELLA: “Mei Lin wanted to ask what had taken her mother. But the fear in her grandmother's eyes silenced every question.”
+
+SCENE 4 — THREE KNOCKS (01:25–02:00)
+VISUAL: Midnight. The candle goes out. The room turns cold. A clock strikes twelve. Mei Lin sits upright in bed. Three slow knocks tap the window. The red cord tightens by itself.
+SFX: tick… tick… tick… then three hollow knocks.
+MOTHER'S VOICE OUTSIDE: “Mei Lin… my daughter. It's cold. Please open the window.”
+VISUAL: Mei Lin's eyes fill with tears. Through a narrow gap in the shutters, a familiar hand rests against the glass. Its fingers are too long.
+BELLA: “She knew that voice. She had cried herself to sleep remembering it. It was her mother's voice… exactly as she remembered it.”
+MEI LIN, barely audible: “Mother?”
+The lantern flame turns black.
+
+SCENE 5 — THE THING AT THE WINDOW (02:00–02:35)
+VISUAL: The figure outside slowly lifts its face. Its mouth stretches into a smile that does not belong on a human face. Behind Mei Lin, the bedroom door creaks open although the latch is still locked.
+GRANDMOTHER, shouting from the hallway: “MEI LIN! DON'T LOOK BEHIND YOU!”
+BELLA: “The voice at the window stopped. For one terrible second, the whole village became silent. Then Mei Lin heard her mother's voice again… not outside the window, but directly behind her.”
+MOTHER'S VOICE: “You answered me.”
+VISUAL: Mei Lin turns. A towering shadow fills the doorway. The red thread on her wrist snaps.
+
+SCENE 6 — THE FIRST TASTE (02:35–03:00)
+VISUAL: The brass lantern crashes to the floor. Its flame flashes crimson. A black hand reaches toward Mei Lin; cut to the grandmother standing in the corridor, holding an ancient charm and crying.
+GRANDMOTHER: “It has learned your voice.”
+BELLA: “At sunrise, the villagers found Mei Lin's room empty. The window was still locked. The red cord was still tied. But on the inside of the glass, someone had written her name… in the handwriting of her dead mother.”
+VISUAL: Extreme close-up of the writing. In the reflection, Mei Lin stands behind the camera, smiling.
+BELLA, whisper: “And that was only the first night.”
+CUT TO BLACK.
+ON SCREEN: THE DARKNESS TASTE — EPISODE 2: THE NAME IN THE MIRROR
+
+PRODUCTION NOTES
+Use cinematic 2D anime with Chinese dark-fantasy atmosphere: misty mountain village, red lanterns, moonlit rooftops, carved wooden interiors, expressive close-ups, slow camera pushes, restrained motion, and sharp horror reveals. Bella narrates in a warm, clear female voice; character dialogue should be distinct. Use eerie original ambience and silence before each scare. Vertical 9:16 framing for TikTok/Shorts. Keep character faces, costumes, props, and colour palette consistent across scenes. This is an original fictional story.
+`;
+ }
+ const setting=genre==='horror'?'a remote village where the night hides something alive':genre==='mystery'?'a quiet town hiding a carefully buried secret':genre==='fantasy'?'an ancient kingdom where forbidden magic has returned':genre==='adventure'?'a dangerous frontier beyond the known world':'an unfamiliar place where an unexpected problem changes everything';
+ const threat=genre==='horror'?'a presence that imitates familiar voices':genre==='mystery'?'a clue that contradicts every witness':genre==='fantasy'?'a power that demands a terrible price':genre==='adventure'?'a discovery that puts the entire journey at risk':'a misunderstanding that grows into a chaotic chain of events';
+ const beats=[['COLD OPEN','Begin with a striking image from the most dangerous moment.'],['THE WORLD','Introduce the main character, setting, and unusual rule.'],['THE WARNING','A trusted person reveals one important warning.'],['THE DISCOVERY','The main character finds evidence of '+threat+'.'],['THE CONFRONTATION','The character makes a choice and faces the consequence.'],['CLIFFHANGER','End on a surprising discovery that leads into the next episode.']];
+ let out=title.toUpperCase()+'\\n'+genre.toUpperCase()+' · '+duration+' seconds · '+style+' · '+voice+' · '+format+' format\\n\\n';
+ out+='SERIES PREMISE\\n'+title+' follows a central character drawn into '+setting+'. The mystery escalates when they encounter '+threat+'.\\n\\n';
+ beats.forEach((b,i)=>{out+='SCENE '+(i+1)+' — '+b[0]+'\\nVISUAL: '+b[1]+'\\nNARRATION: Every answer creates another question. As the truth comes closer, the danger becomes impossible to ignore.\\n\\n';});
+ out+='PRODUCTION NOTES\\nKeep character appearance and locations consistent. Use cinematic anime framing, expressive faces, atmospheric sound design, and a cliffhanger.\\n';
  return out;
 }
 async function loadQuickSeries(){
