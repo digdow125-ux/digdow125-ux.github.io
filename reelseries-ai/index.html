@@ -9,6 +9,7 @@
 <div class="layout"><section class="panel"><h2>Start a new series</h2><p class="sub">Choose a niche and define the continuing story format.</p><form id="seriesForm"><div class="field"><label>Series title</label><input id="title" required maxlength="90" placeholder="e.g. Secrets of the Savannah"></div><div class="field"><label>Niche / topic</label><input id="niche" required maxlength="120" placeholder="African mystery stories, history, facts..."></div><div class="two"><div class="field"><label>Video format</label><select id="format"><option value="shorts">Short videos (Shorts / TikTok)</option><option value="long">Long-form episodes</option></select></div><div class="field"><label>Language</label><select id="language"><option>English</option><option>Chichewa</option><option>Portuguese</option><option>Swahili</option><option>French</option></select></div></div><div class="field"><label>Episodes per week</label><select id="frequency"><option value="1">1 episode</option><option value="2">2 episodes</option><option value="3" selected>3 episodes</option><option value="4">4 episodes</option><option value="5">5 episodes</option><option value="7">Daily</option></select></div><button type="submit">＋ Create series</button><div id="seriesMsg" class="status"></div></form><div class="notice">This live first release saves your series and episode plans. AI script/voice/video generation and automatic publishing still need provider credentials and channel authorisation; they are not switched on yet.</div></section>
 <section class="panel"><h2>Your series</h2><p class="sub">Your saved projects appear here.</p><div id="seriesList" class="empty">Sign in to load your series.</div></section></div>
 <section class="panel" style="margin-top:18px"><h2>Episode workspace</h2><p class="sub">Select a series above to add and manage episode plans.</p><div id="episodeList" class="empty">Choose a series to view episodes.</div></section>
+<section class="panel" style="margin-top:18px;border-color:#8a6a36"><div class="eyebrow">Finished video library</div><h2>Episode videos — MP4 files</h2><p class="sub">Upload a rendered MP4 here. It is stored privately in your ReelSeries AI account and gets a secure download link.</p><div class="field"><label>Video title</label><input id="videoTitle" maxlength="140" placeholder="Episode title"></div><div class="two"><div class="field"><label>Attach to series</label><select id="videoSeries"><option value="">No series selected</option></select></div><div class="field"><label>Attach to episode (optional)</label><select id="videoEpisode"><option value="">Choose series first</option></select></div></div><div class="field"><label>Finished video file (MP4 recommended)</label><input id="videoFile" type="file" accept="video/mp4,video/webm,video/quicktime"></div><button id="uploadVideo" type="button">Upload video to library</button><div id="videoMsg" class="status" role="status"></div><div id="videoLibrary" class="empty" style="margin-top:14px">Your finished videos will appear here.</div><div class="notice">This library now stores real video files and creates secure download links. Automatic AI rendering is not active yet: the website still needs a video-generation provider API credential. Uploading a file does not spend generation credits.</div></section>
 <section class="panel" style="margin-top:18px"><h2>Channel connections</h2><p class="sub">Prepare your publishing destinations.</p><div class="two"><div class="series"><div class="serieshead"><h3>▶ YouTube</h3><span class="pill">Not connected</span></div><div class="meta">Channel authorisation is not configured yet.</div><button class="secondary" disabled>Connect YouTube</button></div><div class="series"><div class="serieshead"><h3>♪ TikTok</h3><span class="pill">Not connected</span></div><div class="meta">TikTok developer app and publishing approval are required.</div><button class="secondary" disabled>Connect TikTok</button></div></div></section>
 </main></div>
 <script>
@@ -19,13 +20,13 @@ let currentUser=null, selectedSeries=null, cachedSeries=[];
 const $=id=>document.getElementById(id);
 function msg(id,text){$(id).textContent=text}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function authRefresh(){const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null; $('authView').classList.toggle('hidden',!!currentUser);$('appView').classList.toggle('hidden',!currentUser);$('logout').classList.toggle('hidden',!currentUser);$('who').textContent=currentUser?.email||'Not signed in';if(currentUser)await loadSeries()}
+async function authRefresh(){const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null; $('authView').classList.toggle('hidden',!!currentUser);$('appView').classList.toggle('hidden',!currentUser);$('logout').classList.toggle('hidden',!currentUser);$('who').textContent=currentUser?.email||'Not signed in';if(currentUser){await loadSeries();await loadVideoSeries();await loadVideoLibrary()}}
 $('googleSignin').onclick=async()=>{const b=$('googleSignin');b.disabled=true;msg('googleMsg','Opening Google sign-in…');try{const {data,error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname,queryParams:{prompt:'select_account'}}});if(error){msg('googleMsg','Google sign-in setup error: '+error.message);b.disabled=false;return}if(!data?.url){msg('googleMsg','Google sign-in did not return a redirect URL. Check that Google is enabled in Supabase Authentication.');b.disabled=false}}catch(e){msg('googleMsg','Unable to start Google sign-in: '+(e?.message||String(e)));b.disabled=false}};
 $('signin').onclick=async()=>{msg('authMsg','Signing in…');const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});msg('authMsg',error?.message||'Signed in.');if(!error)await authRefresh()};
 $('signup').onclick=async()=>{msg('authMsg','Creating account…');const {data,error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value,options:{emailRedirectTo:location.href.split('?')[0]}});msg('authMsg',error?.message||(data.session?'Account created.':'Account created. Check your email for the confirmation link.'))};
 $('logout').onclick=async()=>{await db.auth.signOut();currentUser=null;selectedSeries=null;await authRefresh()};
 db.auth.onAuthStateChange(()=>setTimeout(authRefresh,0));
-$('seriesForm').onsubmit=async e=>{e.preventDefault();if(!currentUser)return;msg('seriesMsg','Saving series…');const row={user_id:currentUser.id,title:$('title').value.trim(),niche:$('niche').value.trim(),format:$('format').value,language:$('language').value,episodes_per_week:Number($('frequency').value),status:'active'};const {error}=await db.from('series').insert(row);msg('seriesMsg',error?.message||'Series created successfully.');if(!error){e.target.reset();$('frequency').value='3';await loadSeries()}};
+$('seriesForm').onsubmit=async e=>{e.preventDefault();if(!currentUser)return;msg('seriesMsg','Saving series…');const row={user_id:currentUser.id,title:$('title').value.trim(),niche:$('niche').value.trim(),format:$('format').value,language:$('language').value,episodes_per_week:Number($('frequency').value),status:'active'};const {error}=await db.from('series').insert(row);msg('seriesMsg',error?.message||'Series created successfully.');if(!error){e.target.reset();$('frequency').value='3';await loadSeries();await loadVideoSeries()}};
 async function loadSeries(){const {data,error}=await db.from('series').select('*').order('created_at',{ascending:false});if(error){$('seriesList').className='empty';$('seriesList').textContent=error.message;return}cachedSeries=data||[];$('seriesCount').textContent=cachedSeries.length;$('activeCount').textContent=cachedSeries.filter(s=>s.status==='active').length;const {count}=await db.from('episodes').select('*',{count:'exact',head:true});$('episodeCount').textContent=count??0;if(!cachedSeries.length){$('seriesList').className='empty';$('seriesList').textContent='No series yet. Create your first one.';return}$('seriesList').className='';$('seriesList').innerHTML=cachedSeries.map(s=>'<article class="series"><div class="serieshead"><h3>'+esc(s.title)+'</h3><span class="pill">'+esc(s.status)+'</span></div><div class="meta">'+esc(s.niche)+' · '+esc(s.language)+' · '+s.episodes_per_week+'/week</div><div class="row"><button data-open="'+s.id+'">Open episodes</button><button class="secondary" data-pause="'+s.id+'">'+(s.status==='active'?'Pause':'Activate')+'</button></div></article>').join('');document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openSeries(b.dataset.open));document.querySelectorAll('[data-pause]').forEach(b=>b.onclick=()=>toggleSeries(b.dataset.pause))}
 async function toggleSeries(id){const s=cachedSeries.find(x=>x.id===id);const {error}=await db.from('series').update({status:s.status==='active'?'paused':'active'}).eq('id',id);if(error)alert(error.message);else await loadSeries()}
 async function openSeries(id){selectedSeries=cachedSeries.find(s=>s.id===id);if(!selectedSeries)return;const {data,error}=await db.from('episodes').select('*').eq('series_id',id).order('episode_number',{ascending:true});if(error){$('episodeList').textContent=error.message;return}const items=data||[];$('episodeList').className='';$('episodeList').innerHTML='<div class="series"><h3>'+esc(selectedSeries.title)+'</h3><div class="meta">Add the next episode to this continuing series.</div><form id="episodeForm"><div class="field"><label>Episode title</label><input id="epTitle" required maxlength="120" placeholder="Episode title"></div><div class="field"><label>Script / story notes (optional)</label><textarea id="epScript" placeholder="Write the episode script or notes here…"></textarea></div><button type="submit">Save episode plan</button></form></div>'+(items.length?items.map(ep=>'<div class="episode"><b>Episode '+ep.episode_number+': '+esc(ep.title)+'</b><small>'+esc(ep.status)+' · '+(ep.script?'Script notes saved':'No script yet')+'</small></div>').join(''):'<div class="empty">No episodes yet. Add your first episode above.</div>');$('episodeForm').onsubmit=async e=>{e.preventDefault();const next=(items.reduce((m,x)=>Math.max(m,x.episode_number||0),0))+1;const {error}=await db.from('episodes').insert({series_id:id,user_id:currentUser.id,episode_number:next,title:$('epTitle').value.trim(),script:$('epScript').value.trim()||null,status:$('epScript').value.trim()?'scripted':'planned'});if(error)alert(error.message);else await openSeries(id);await loadSeries()}}
@@ -106,6 +107,62 @@ Use cinematic 2D anime with Chinese dark-fantasy atmosphere: misty mountain vill
  out+='PRODUCTION NOTES\\nKeep character appearance and locations consistent. Use cinematic anime framing, expressive faces, atmospheric sound design, and a cliffhanger.\\n';
  return out;
 }
+
+async function loadVideoSeries(){
+ const s=$('videoSeries'); if(!s)return;
+ s.innerHTML='<option value="">Choose a series</option>'+cachedSeries.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+'</option>').join('');
+}
+$('videoSeries')?.addEventListener('change',async()=>{
+ const sid=$('videoSeries').value, sel=$('videoEpisode');
+ if(!sid){sel.innerHTML='<option value="">Choose series first</option>';return}
+ const {data,error}=await db.from('episodes').select('id,episode_number,title').eq('series_id',sid).order('episode_number');
+ if(error){sel.innerHTML='<option value="">Could not load episodes</option>';return}
+ sel.innerHTML='<option value="">No specific episode</option>'+(data||[]).map(x=>'<option value="'+esc(x.id)+'">Episode '+x.episode_number+' — '+esc(x.title)+'</option>').join('');
+});
+async function loadVideoLibrary(){
+ const host=$('videoLibrary'); if(!host||!currentUser)return;
+ const {data,error}=await db.from('video_assets').select('*').order('created_at',{ascending:false});
+ if(error){host.className='empty';host.textContent='Video library: '+error.message;return}
+ if(!data?.length){host.className='empty';host.textContent='No finished videos uploaded yet.';return}
+ host.className='';
+ host.innerHTML=data.map(v=>'<article class="series"><div class="serieshead"><h3>'+esc(v.title)+'</h3><span class="pill">'+esc(v.status)+'</span></div><div class="meta">'+(v.file_size?((v.file_size/1048576).toFixed(1)+' MB · '):'')+new Date(v.created_at).toLocaleString()+' · TikTok: '+esc(v.tiktok_status)+' · YouTube: '+esc(v.youtube_status)+'</div><div class="row"><button data-video-download="'+esc(v.id)+'">Get download link</button><button class="secondary" data-video-delete="'+esc(v.id)+'">Delete</button></div><div class="status" id="dl-'+esc(v.id)+'"></div></article>').join('');
+ host.querySelectorAll('[data-video-download]').forEach(b=>b.onclick=async()=>{
+  const id=b.dataset.videoDownload; b.disabled=true;
+  const v=data.find(x=>x.id===id);
+  const {data:signed,error:e}=await db.storage.from('episode-videos').createSignedUrl(v.storage_path,3600,{download:v.title.replace(/[^a-z0-9._-]/gi,'_')+'.mp4'});
+  const out=$('dl-'+id);
+  if(e){out.textContent='Could not create link: '+e.message}
+  else {out.innerHTML='Secure link (expires in 1 hour): <a target="_blank" rel="noopener" style="color:var(--gold)" href="'+esc(signed.signedUrl)+'">Download / open MP4</a>'; }
+  b.disabled=false;
+ });
+ host.querySelectorAll('[data-video-delete]').forEach(b=>b.onclick=async()=>{
+  if(!confirm('Delete this video file permanently?'))return;
+  const v=data.find(x=>x.id===b.dataset.videoDelete);
+  const {error:se}=await db.storage.from('episode-videos').remove([v.storage_path]);
+  if(se){alert(se.message);return}
+  const {error:de}=await db.from('video_assets').delete().eq('id',v.id);
+  if(de){alert(de.message);return} await loadVideoLibrary();
+ });
+}
+$('uploadVideo')?.addEventListener('click',async()=>{
+ const file=$('videoFile').files?.[0], title=$('videoTitle').value.trim()||file?.name||'Untitled episode';
+ if(!currentUser){msg('videoMsg','Sign in first.');return}
+ if(!file){msg('videoMsg','Choose a video file first.');return}
+ if(!['video/mp4','video/webm','video/quicktime'].includes(file.type)){msg('videoMsg','Choose an MP4, WebM or MOV video.');return}
+ if(file.size>2*1024*1024*1024){msg('videoMsg','File is larger than the 2 GB limit.');return}
+ const btn=$('uploadVideo');btn.disabled=true;msg('videoMsg','Uploading '+file.name+'… keep this page open.');
+ try{
+  const path=currentUser.id+'/'+Date.now()+'-'+file.name.replace(/[^a-z0-9._-]/gi,'_');
+  const {error:upErr}=await db.storage.from('episode-videos').upload(path,file,{contentType:file.type,upsert:false});
+  if(upErr)throw upErr;
+  const {error:rowErr}=await db.from('video_assets').insert({user_id:currentUser.id,series_id:$('videoSeries').value||null,episode_id:$('videoEpisode').value||null,title,storage_path:path,mime_type:file.type,file_size:file.size,status:'ready'});
+  if(rowErr){await db.storage.from('episode-videos').remove([path]);throw rowErr}
+  msg('videoMsg','Video uploaded and saved. Create a download link from the library below.');
+  $('videoFile').value='';$('videoTitle').value='';await loadVideoLibrary();
+ }catch(err){msg('videoMsg','Upload failed: '+(err?.message||String(err)))}
+ finally{btn.disabled=false}
+});
+
 async function loadQuickSeries(){
  const sel=$('quickSeries'); if(!sel||!currentUser)return;
  sel.innerHTML='<option value="__new">Create a new series</option>'+cachedSeries.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.title)+'</option>').join('');
@@ -128,7 +185,7 @@ $('quickEpisodeForm')?.addEventListener('submit',async e=>{
   const {error}=await db.from('episodes').insert({series_id:seriesId,user_id:currentUser.id,episode_number:next,title,script,status:'scripted'});
   if(error)throw error;
   msg('quickMsg','Episode '+next+' draft saved. Open the series below to review it. No credits were used.');
-  $('quickTitle').value=''; await loadSeries(); await loadQuickSeries(); await openSeries(seriesId);
+  $('quickTitle').value=''; await loadSeries(); await loadQuickSeries(); await loadVideoSeries(); await openSeries(seriesId);
  }catch(err){msg('quickMsg','Could not save draft: '+(err?.message||String(err)));}
  finally{btn.disabled=false}
 });
