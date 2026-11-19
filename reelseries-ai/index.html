@@ -191,4 +191,45 @@ $('quickEpisodeForm')?.addEventListener('submit',async e=>{
 });
 
 authRefresh().then(loadQuickSeries);
-</script></body></html>
+</script>
+<section class="panel" id="freeStudio" style="margin:26px 0;padding:22px;border:1px solid #3b4a66;border-radius:18px;background:#121a2e">
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Free Episode Studio</h2><span style="font-size:12px;padding:4px 9px;border-radius:20px;background:#183c32;color:#8ff0c5">No AI credits required</span></div>
+  <p style="color:#aab6ca">Turn your own scene images and narration audio into a moving episode video in this browser. This free mode does not generate anime artwork or AI voices; it animates the images you provide.</p>
+  <label style="display:block;margin:14px 0 6px">Episode title</label><input id="freeTitle" value="THE DARKNESS TASTE — Episode 1" style="width:100%;padding:12px;border-radius:9px;background:#0b1020;color:white;border:1px solid #344460">
+  <label style="display:block;margin:14px 0 6px">Scene images (choose up to 12 images, in story order)</label><input id="freeImages" type="file" accept="image/*" multiple style="display:block;width:100%;padding:12px;background:#0b1020;border:1px solid #344460;border-radius:9px;color:white">
+  <label style="display:block;margin:14px 0 6px">Narration / voiceover audio (optional, MP3 or WAV)</label><input id="freeAudio" type="file" accept="audio/*" style="display:block;width:100%;padding:12px;background:#0b1020;border:1px solid #344460;border-radius:9px;color:white">
+  <label style="display:block;margin:14px 0 6px">Seconds per scene</label><input id="freeSeconds" type="number" min="3" max="30" value="10" style="width:120px;padding:10px;border-radius:9px;background:#0b1020;color:white;border:1px solid #344460">
+  <p id="freeStatus" style="color:#aab6ca">Select at least one image. Add narration audio to include spoken dialogue in the exported video.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap"><button id="freeRender">Create free episode video</button><a id="freeDownload" hidden style="align-self:center;color:#f0c66e" download="darkness-taste-episode.webm">Download finished video</a></div>
+  <video id="freePreview" controls playsinline style="display:none;width:100%;max-width:440px;margin-top:16px;border-radius:12px;background:#000"></video>
+  <canvas id="freeCanvas" width="720" height="1280" style="display:none"></canvas>
+</section>
+<script>
+(()=> {
+ const $=id=>document.getElementById(id);
+ const btn=$('freeRender'); if(!btn)return;
+ btn.addEventListener('click',async()=>{
+  const files=[...($('freeImages').files||[])].slice(0,12), audioFile=$('freeAudio').files[0], secs=Math.max(3,Math.min(30,Number($('freeSeconds').value)||10));
+  if(!files.length){$('freeStatus').textContent='Please choose at least one scene image.';return;}
+  if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){$('freeStatus').textContent='This browser does not support video export. Try the latest Chrome browser.';return;}
+  btn.disabled=true;$('freeDownload').hidden=true;$('freeStatus').textContent='Preparing scenes… keep this page open until rendering finishes.';
+  try{
+   const imgs=await Promise.all(files.map(f=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=URL.createObjectURL(f)})));
+   const canvas=$('freeCanvas'),ctx=canvas.getContext('2d'),fps=24,sceneDuration=secs*1000,total=imgs.length*sceneDuration;
+   const stream=canvas.captureStream(fps);let audioCtx=null,audioEl=null,source=null;
+   if(audioFile){audioEl=new Audio(URL.createObjectURL(audioFile));audioEl.crossOrigin='anonymous';audioCtx=new(window.AudioContext||window.webkitAudioContext)();await audioCtx.resume();source=audioCtx.createMediaElementSource(audioEl);const dest=audioCtx.createMediaStreamDestination();source.connect(dest);source.connect(audioCtx.destination);dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));}
+   const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t))||'';
+   const recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined),chunks=[];recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+   const done=new Promise((resolve,reject)=>{recorder.onstop=()=>resolve(new Blob(chunks,{type:recorder.mimeType||'video/webm'}));recorder.onerror=reject});
+   const start=performance.now();recorder.start(500);if(audioEl){audioEl.currentTime=0;await audioEl.play().catch(()=>{});}
+   function draw(now){const elapsed=now-start,idx=Math.min(imgs.length-1,Math.floor(elapsed/sceneDuration)),within=(elapsed%sceneDuration)/sceneDuration,im=imgs[idx];ctx.fillStyle='#050914';ctx.fillRect(0,0,720,1280);const scale=Math.max(720/im.width,1280/im.height)*(1+within*.10),w=im.width*scale,h=im.height*scale;ctx.drawImage(im,(720-w)/2,(1280-h)/2,w,h);const grad=ctx.createLinearGradient(0,850,0,1280);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,.78)');ctx.fillStyle=grad;ctx.fillRect(0,0,720,1280);ctx.fillStyle='#f4d28b';ctx.font='bold 28px Arial';ctx.fillText(($('freeTitle').value||'THE DARKNESS TASTE').slice(0,42),36,1200);ctx.fillStyle='rgba(255,255,255,.75)';ctx.font='20px Arial';ctx.fillText('SCENE '+(idx+1)+' / '+imgs.length,36,1235);if(elapsed<total)requestAnimationFrame(draw);else recorder.stop();}
+   requestAnimationFrame(draw);
+   $('freeStatus').textContent='Rendering '+imgs.length+' scenes. Do not close this page…';
+   const blob=await done, url=URL.createObjectURL(blob);$('freePreview').src=url;$('freePreview').style.display='block';$('freeDownload').href=url;$('freeDownload').hidden=false;$('freeDownload').textContent='Download finished video ('+(blob.size/1048576).toFixed(1)+' MB)';$('freeStatus').textContent='Finished! This is a WebM video. Download it, then upload it to the Finished Video Library above. Rendering happens on your device; no AI credits were used.';
+   stream.getTracks().forEach(t=>t.stop());if(audioCtx)await audioCtx.close();imgs.forEach(im=>URL.revokeObjectURL(im.src));
+  }catch(e){$('freeStatus').textContent='Could not render: '+(e.message||e); }finally{btn.disabled=false;}
+ });
+})();
+</script>
+
+</body></html>
