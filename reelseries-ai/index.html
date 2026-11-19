@@ -231,7 +231,12 @@ $('agnesGenerate')?.addEventListener('click',async()=>{
  btn.disabled=true;$('agnesPreview').style.display='none';$('agnesDownload').hidden=true;msg('agnesStatus','Submitting your scene to Agnes AI…');
  try{
   const {data,error}=await db.functions.invoke('agnes-video',{body:{action:'create',prompt,seconds}});
-  if(error)throw error;if(data?.error)throw new Error(data.error);
+  if(error){
+   let detail=error.message||'Request failed';
+   try{const response=error.context;if(response){const body=await response.clone().json();detail=body.error||body.message||JSON.stringify(body)}}catch(_){}
+   throw new Error(detail);
+  }
+  if(data?.error)throw new Error(data.error);
   const videoId=data.video_id;msg('agnesStatus','Scene submitted. Waiting for Agnes… This may take several minutes.');
   let finished=false;
   for(let attempt=0;attempt<90;attempt++){
