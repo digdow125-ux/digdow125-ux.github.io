@@ -22,6 +22,20 @@
  <div class="row"><button id="aiSave" type="button" class="secondary" disabled>Save script to episode library</button><button id="aiCopy" type="button" class="secondary">Copy script</button></div>
  <div class="notice">Free tier: text generation only. Actual AI video models do not currently offer a free public API tier. Google Flow provides a limited daily allowance in its own website, but it does not provide a public API for this site to call. Animated footage, narration audio and automatic publishing are separate integrations and are not being falsely marked as complete.</div>
 </section>
+
+<section class="panel" id="agnesVideoStudio" style="margin:8px 0 18px;border:1px solid #8a6a36">
+ <div class="eyebrow">Agnes AI · video generation connection</div>
+ <h2 style="font-size:22px;margin:5px 0">Generate an anime scene clip</h2>
+ <p class="sub">Create one short vertical scene clip from a visual prompt. This is the first video-generation step, not a complete multi-minute episode.</p>
+ <div class="field"><label>Scene prompt</label><textarea id="agnesPrompt" rows="5" maxlength="4000" style="width:100%;background:#0b1020;color:#f5f7fb;border:1px solid #344460;border-radius:10px;padding:12px">Cinematic Chinese dark-fantasy 2D anime, ancient mountain village at midnight, red lanterns swaying in cold mist, a young woman with long black hair wearing a pale blue traditional jacket stands beside a wooden window, eerie supernatural atmosphere, slow cinematic camera push-in, detailed professional anime animation, vertical composition, no text, no subtitles.</textarea></div>
+ <div class="field"><label>Clip duration</label><select id="agnesSeconds"><option value="4">4 seconds</option><option value="8" selected>8 seconds</option><option value="12">12 seconds</option></select></div>
+ <label style="display:flex;gap:9px;align-items:flex-start;font-size:12px;color:#d6deec;margin:12px 0"><input id="agnesFreeCheck" type="checkbox" style="margin-top:3px"> I checked my Agnes account's model pricing/quota and confirm Agnes Video 2.5 Flash is free for my account before generating.</label>
+ <button id="agnesGenerate" type="button">✦ Generate scene clip</button>
+ <div id="agnesStatus" class="status" role="status">Agnes API connection is installed. Check your Agnes dashboard for the current free quota and model price before generating.</div>
+ <video id="agnesPreview" controls playsinline style="display:none;width:100%;max-width:440px;margin-top:14px;border-radius:12px;background:#000"></video>
+ <div class="row" style="margin-top:10px"><a id="agnesDownload" hidden style="align-self:center;color:var(--gold)" download="reelseries-scene.mp4">Download generated scene</a></div>
+ <div class="notice">Free access and promotional pricing can change. The generator will only run after you tick the pricing confirmation. Agnes currently creates short clips (4–12 seconds); a full 3-minute episode still needs many scenes, narration, editing and assembly.</div>
+</section>
 <div class="stats"><div class="stat"><strong id="seriesCount">0</strong><span>YOUR SERIES</span></div><div class="stat"><strong id="episodeCount">0</strong><span>EPISODES PLANNED</span></div><div class="stat"><strong id="activeCount">0</strong><span>ACTIVE SERIES</span></div></div>
 <div class="layout"><section class="panel"><h2>Start a new series</h2><p class="sub">Choose a niche and define the continuing story format.</p><form id="seriesForm"><div class="field"><label>Series title</label><input id="title" required maxlength="90" placeholder="e.g. Secrets of the Savannah"></div><div class="field"><label>Niche / topic</label><input id="niche" required maxlength="120" placeholder="African mystery stories, history, facts..."></div><div class="two"><div class="field"><label>Video format</label><select id="format"><option value="shorts">Short videos (Shorts / TikTok)</option><option value="long">Long-form episodes</option></select></div><div class="field"><label>Language</label><select id="language"><option>English</option><option>Chichewa</option><option>Portuguese</option><option>Swahili</option><option>French</option></select></div></div><div class="field"><label>Episodes per week</label><select id="frequency"><option value="1">1 episode</option><option value="2">2 episodes</option><option value="3" selected>3 episodes</option><option value="4">4 episodes</option><option value="5">5 episodes</option><option value="7">Daily</option></select></div><button type="submit">＋ Create series</button><div id="seriesMsg" class="status"></div></form><div class="notice">This live first release saves your series and episode plans. AI script/voice/video generation and automatic publishing still need provider credentials and channel authorisation; they are not switched on yet.</div></section>
 <section class="panel"><h2>Your series</h2><p class="sub">Your saved projects appear here.</p><div id="seriesList" class="empty">Sign in to load your series.</div></section></div>
@@ -207,6 +221,37 @@ $('quickEpisodeForm')?.addEventListener('submit',async e=>{
  finally{btn.disabled=false}
 });
 
+
+
+$('agnesGenerate')?.addEventListener('click',async()=>{
+ const btn=$('agnesGenerate'), prompt=$('agnesPrompt').value.trim(), seconds=Number($('agnesSeconds').value);
+ if(!currentUser){msg('agnesStatus','Please sign in first.');return}
+ if(!prompt){msg('agnesStatus','Enter a scene prompt first.');return}
+ if(!$('agnesFreeCheck').checked){msg('agnesStatus','Please check your Agnes dashboard and confirm this model is free for your account before generating.');return}
+ btn.disabled=true;$('agnesPreview').style.display='none';$('agnesDownload').hidden=true;msg('agnesStatus','Submitting your scene to Agnes AI…');
+ try{
+  const {data,error}=await db.functions.invoke('agnes-video',{body:{action:'create',prompt,seconds}});
+  if(error)throw error;if(data?.error)throw new Error(data.error);
+  const videoId=data.video_id;msg('agnesStatus','Scene submitted. Waiting for Agnes… This may take several minutes.');
+  let finished=false;
+  for(let attempt=0;attempt<90;attempt++){
+   await new Promise(resolve=>setTimeout(resolve,8000));
+   const {data:statusData,error:statusError}=await db.functions.invoke('agnes-video',{body:{action:'status',video_id:videoId}});
+   if(statusError)throw statusError;if(statusData?.error)throw new Error(statusData.error);
+   const state=String(statusData.status||'processing').toLowerCase();
+   msg('agnesStatus','Agnes status: '+state+(statusData.progress?' · '+statusData.progress+'%':'')+'.');
+   if(state==='completed'||state==='succeeded'||state==='success'||state==='done'){
+    if(!statusData.video_url)throw new Error('Agnes completed the task but did not return a video URL.');
+    $('agnesPreview').src=statusData.video_url;$('agnesPreview').style.display='block';
+    $('agnesDownload').href=statusData.video_url;$('agnesDownload').hidden=false;
+    msg('agnesStatus','Scene clip generated. Preview it below and download it.');finished=true;break;
+   }
+   if(state==='failed'||state==='error'||state==='cancelled')throw new Error(statusData.error||'Agnes could not generate this scene.');
+  }
+  if(!finished)msg('agnesStatus','The generation is still processing. Your task ID is '+videoId+'. Try checking again later from Agnes; do not submit another copy yet.');
+ }catch(err){msg('agnesStatus','Video generation error: '+(err?.message||String(err)));}
+ finally{btn.disabled=false}
+});
 
 $('aiGenerate')?.addEventListener('click',async()=>{
  const btn=$('aiGenerate');btn.disabled=true;$('aiSave').disabled=true;msg('aiStatus','Writing your episode and storyboard with Gemini…');
