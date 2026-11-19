@@ -5,6 +5,23 @@
 <section id="authView" class="auth panel"><div class="eyebrow">Welcome to your studio</div><h1 style="font-size:28px;margin:8px 0">Create stories that keep going.</h1><p class="sub">Sign in or create an account to manage your series and episodes.</p><button id="googleSignin" class="secondary" type="button" style="width:100%;margin:2px 0 14px;background:#f7f8fb;color:#202938;border:1px solid #d9dfeb">🌐 Continue with Google</button><div class="status" id="googleMsg"></div><div class="field"><label>Email address</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div><div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="At least 6 characters"></div><div class="row"><button id="signin">Sign in</button><button id="signup" class="secondary">Create account</button></div><div id="authMsg" class="status" role="status"></div><div class="notice">New accounts may need to confirm their email before signing in.</div></section>
 <main id="appView" class="hidden"><section class="hero"><div class="eyebrow">Your AI storytelling workspace</div><h1>One idea. <span style="color:var(--gold)">Endless episodes.</span></h1><p>Build a connected series, keep episode ideas organised, and prepare your channel workflow from one studio.</p><div class="tabs"><span>Series planning</span><span>Episode library</span><span>Publishing workspace</span></div></section>
 <section class="panel" style="margin:8px 0 18px;border-color:#8a6a36"><div class="eyebrow">One-title episode studio</div><h2 style="font-size:22px;margin-top:5px">Create an episode from a title</h2><p class="sub">Enter just the title. The studio builds a structured episode draft and saves it to your series.</p><form id="quickEpisodeForm"><div class="field"><label>Episode title</label><input id="quickTitle" required maxlength="120" value="The Darkness Taste" placeholder="Episode title"></div><div class="two"><div class="field"><label>Save in series</label><select id="quickSeries"><option value="__new">Create a new series</option></select></div><div class="field"><label>Story genre</label><select id="quickGenre"><option value="horror">Supernatural horror</option><option value="mystery">Mystery thriller</option><option value="fantasy">Dark fantasy</option><option value="adventure">Adventure</option><option value="comedy">Comedy</option></select></div><div class="field"><label>Visual style</label><select id="quickStyle"><option>Anime cinematic</option><option selected>Chinese dark fantasy anime</option><option>2D anime</option><option>3D animation</option></select></div><div class="field"><label>Narrator</label><select id="quickVoice"><option>Bella — female narrator</option><option>Female narrator</option><option>Male narrator</option></select></div></div><div class="two"><div class="field"><label>Episode length</label><select id="quickDuration"><option value="60">1 minute</option><option value="90">90 seconds</option><option value="180" selected>3 minutes</option><option value="300">5 minutes</option></select></div><div class="field"><label>Format</label><select id="quickFormat"><option value="vertical">Vertical — TikTok / Shorts</option><option value="landscape">Landscape — YouTube</option></select></div></div><button id="quickCreate" type="submit">✦ Create Episode 1 draft</button><div id="quickMsg" class="status" role="status"></div></form><div class="notice">Important: this release creates and saves a structured story draft from your title. Live AI writing, voice generation, animated footage and automatic uploads are not yet connected to this website. No generation credits are spent by this draft builder.</div></section>
+<section class="panel" id="aiEpisodeCreator" style="margin:8px 0 18px;border:1px solid #8a6a36">
+ <div class="eyebrow">AI production desk · free text generation</div>
+ <h2 style="font-size:22px;margin:5px 0">AI Episode Creator</h2>
+ <p class="sub">Generate a complete episode script and eight-scene anime storyboard from your title. This uses Gemini's text-generation API through a private Supabase function. It does not yet generate animated video clips or voice audio.</p>
+ <div class="two">
+  <div class="field"><label>Episode title</label><input id="aiTitle" maxlength="140" value="The Village That Never Sleeps" placeholder="Enter your episode title"></div>
+  <div class="field"><label>Genre</label><select id="aiGenre"><option>Supernatural horror</option><option>Mystery thriller</option><option>Dark fantasy</option><option>Adventure</option><option>Comedy</option></select></div>
+  <div class="field"><label>Visual style</label><select id="aiStyle"><option>Cinematic 2D anime</option><option>Chinese dark fantasy anime</option><option>Professional 3D animation</option><option>Anime documentary</option></select></div>
+  <div class="field"><label>Narrator</label><select id="aiVoice"><option>Warm female narrator</option><option>African female narrator</option><option>Deep male narrator</option></select></div>
+  <div class="field"><label>Episode length</label><select id="aiDuration"><option value="60">1 minute</option><option value="90">90 seconds</option><option value="180" selected>3 minutes</option><option value="300">5 minutes</option><option value="600">10 minutes</option></select></div>
+ </div>
+ <button id="aiGenerate" type="button">✦ Generate AI script + storyboard</button>
+ <div id="aiStatus" class="status" role="status">AI writer is installed. Add your Gemini API key to Supabase secrets to activate generation.</div>
+ <div class="field"><label>Generated episode pack</label><textarea id="aiOutput" rows="18" placeholder="Your AI-generated script, narration and scene prompts will appear here…" style="width:100%;background:#0b1020;color:#f5f7fb;border:1px solid #344460;border-radius:10px;padding:12px"></textarea></div>
+ <div class="row"><button id="aiSave" type="button" class="secondary" disabled>Save script to episode library</button><button id="aiCopy" type="button" class="secondary">Copy script</button></div>
+ <div class="notice">Free tier: text generation only. Actual AI video models do not currently offer a free public API tier. Google Flow provides a limited daily allowance in its own website, but it does not provide a public API for this site to call. Animated footage, narration audio and automatic publishing are separate integrations and are not being falsely marked as complete.</div>
+</section>
 <div class="stats"><div class="stat"><strong id="seriesCount">0</strong><span>YOUR SERIES</span></div><div class="stat"><strong id="episodeCount">0</strong><span>EPISODES PLANNED</span></div><div class="stat"><strong id="activeCount">0</strong><span>ACTIVE SERIES</span></div></div>
 <div class="layout"><section class="panel"><h2>Start a new series</h2><p class="sub">Choose a niche and define the continuing story format.</p><form id="seriesForm"><div class="field"><label>Series title</label><input id="title" required maxlength="90" placeholder="e.g. Secrets of the Savannah"></div><div class="field"><label>Niche / topic</label><input id="niche" required maxlength="120" placeholder="African mystery stories, history, facts..."></div><div class="two"><div class="field"><label>Video format</label><select id="format"><option value="shorts">Short videos (Shorts / TikTok)</option><option value="long">Long-form episodes</option></select></div><div class="field"><label>Language</label><select id="language"><option>English</option><option>Chichewa</option><option>Portuguese</option><option>Swahili</option><option>French</option></select></div></div><div class="field"><label>Episodes per week</label><select id="frequency"><option value="1">1 episode</option><option value="2">2 episodes</option><option value="3" selected>3 episodes</option><option value="4">4 episodes</option><option value="5">5 episodes</option><option value="7">Daily</option></select></div><button type="submit">＋ Create series</button><div id="seriesMsg" class="status"></div></form><div class="notice">This live first release saves your series and episode plans. AI script/voice/video generation and automatic publishing still need provider credentials and channel authorisation; they are not switched on yet.</div></section>
 <section class="panel"><h2>Your series</h2><p class="sub">Your saved projects appear here.</p><div id="seriesList" class="empty">Sign in to load your series.</div></section></div>
@@ -187,6 +204,37 @@ $('quickEpisodeForm')?.addEventListener('submit',async e=>{
   msg('quickMsg','Episode '+next+' draft saved. Open the series below to review it. No credits were used.');
   $('quickTitle').value=''; await loadSeries(); await loadQuickSeries(); await loadVideoSeries(); await openSeries(seriesId);
  }catch(err){msg('quickMsg','Could not save draft: '+(err?.message||String(err)));}
+ finally{btn.disabled=false}
+});
+
+
+$('aiGenerate')?.addEventListener('click',async()=>{
+ const btn=$('aiGenerate');btn.disabled=true;$('aiSave').disabled=true;msg('aiStatus','Writing your episode and storyboard with Gemini…');
+ try{
+  const {data,error}=await db.functions.invoke('episode-writer',{body:{title:$('aiTitle').value.trim(),genre:$('aiGenre').value,style:$('aiStyle').value,voice:$('aiVoice').value,duration:Number($('aiDuration').value)}});
+  if(error)throw error;
+  if(data?.error)throw new Error(data.error);
+  $('aiOutput').value=data.output||''; $('aiSave').disabled=!$('aiOutput').value.trim();
+  msg('aiStatus','AI episode pack generated successfully with '+(data.model||'Gemini')+'. Review it, then save it to your episode library.');
+ }catch(err){msg('aiStatus','Could not generate: '+(err?.message||String(err)));}
+ finally{btn.disabled=false}
+});
+$('aiCopy')?.addEventListener('click',async()=>{const v=$('aiOutput').value;if(!v){msg('aiStatus','Generate a script first.');return}try{await navigator.clipboard.writeText(v);msg('aiStatus','Episode pack copied.')}catch(e){$('aiOutput').focus();$('aiOutput').select();msg('aiStatus','Select and copy the text above.')}});
+$('aiSave')?.addEventListener('click',async()=>{
+ const btn=$('aiSave');btn.disabled=true;
+ try{
+  if(!currentUser)throw new Error('Please sign in first.');
+  const title=$('aiTitle').value.trim(), output=$('aiOutput').value.trim();if(!output)throw new Error('Generate a script first.');
+  let seriesId=$('quickSeries')?.value||'__new';
+  if(seriesId==='__new'){
+   const {data:created,error}=await db.from('series').insert({user_id:currentUser.id,title:title.slice(0,90),niche:$('aiGenre').value+' story series',format:'shorts',language:'English',episodes_per_week:3,status:'active'}).select().single();
+   if(error)throw error;seriesId=created.id;
+  }
+  const {data:rows,error:readErr}=await db.from('episodes').select('episode_number').eq('series_id',seriesId);if(readErr)throw readErr;
+  const number=(rows||[]).reduce((m,r)=>Math.max(m,Number(r.episode_number)||0),0)+1;
+  const {error}=await db.from('episodes').insert({series_id:seriesId,user_id:currentUser.id,episode_number:number,title,script:output,status:'scripted'});if(error)throw error;
+  msg('aiStatus','Saved as Episode '+number+'. Open your series below to review it.');await loadSeries();await loadQuickSeries();await openSeries(seriesId);
+ }catch(err){msg('aiStatus','Could not save: '+(err?.message||String(err)));}
  finally{btn.disabled=false}
 });
 
