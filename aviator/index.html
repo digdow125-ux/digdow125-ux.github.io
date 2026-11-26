@@ -27,11 +27,12 @@ button{border:0;border-radius:10px;padding:11px 15px;background:var(--cyan);colo
 <p class="sub">A private round-history workspace with descriptive statistics, distribution analysis and honest backtesting. Enter completed multipliers manually; this app does not connect to BetPawa or see future rounds.</p>
 <div class="grid">
 <section class="card span12"><h2>Ready to use — no account required</h2><p class="small">RIANDER AVIATOR is running in local mode. Your entered rounds are saved only in this browser on this device. They are not uploaded to a server or synced to other devices.</p></section>
-<section class="card span8"><h2>Enter completed rounds</h2><textarea id="roundInput" placeholder="Example: 1.24, 2.10, 1.03, 5.60, 12.40"></textarea><div class="row" style="margin-top:10px"><button id="saveRounds">Save round history</button><button class="secondary" id="clearInput">Clear</button></div><div class="status" id="saveStatus">Enter completed rounds and save them on this device.</div></section>
+<section class="card span12"><h2>Dashboard — round outlook</h2><div class="row" style="justify-content:space-between"><div><div class="metric" id="outlookHeadline">Waiting for round history</div><div class="small" id="outlookSub">Add completed rounds to see the most common historical band and its rate.</div></div><div class="pill">HISTORICAL REFERENCE • NOT A CERTAIN PREDICTION</div></div><div class="metrics" style="margin-top:14px"><div class="metricbox"><div class="metric" id="topBand">—</div><div class="metric-label">Most common past band</div></div><div class="metricbox"><div class="metric" id="topBandRate">—</div><div class="metric-label">Historical frequency</div></div><div class="metricbox"><div class="metric" id="dashboardAccuracy">—</div><div class="metric-label">Walk-forward test accuracy</div></div><div class="metricbox"><div class="metric" id="dashboardTests">—</div><div class="metric-label">Backtested rounds</div></div></div><div class="outlook-grid" id="outlookGrid"><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">Below 2x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">2x–4.99x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">5x–9.99x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">10x+</div></div></div><p class="small" id="outlookWarning" style="margin-bottom:0">These percentages summarize the selected past sample. They are not probabilities guaranteed for the next round and do not identify a safe entry point.</p></section>
+
+
+<section class="card span8"><h2>Enter completed rounds — two quick slots</h2><div class="row"><div><label class="small" for="roundOne">Round 1 result (x)</label><input id="roundOne" type="number" min="1" step="0.01" placeholder="e.g. 1.45"></div><div><label class="small" for="roundTwo">Round 2 result (x)</label><input id="roundTwo" type="number" min="1" step="0.01" placeholder="e.g. 3.20"></div></div><div class="row" style="margin-top:10px"><button id="saveTwoRounds">Save entered rounds</button><button class="secondary" id="clearTwoRounds">Clear slots</button></div><details style="margin-top:13px"><summary class="small" style="cursor:pointer">Or paste multiple completed rounds</summary><textarea id="roundInput" placeholder="Example: 1.24, 2.10, 1.03, 5.60, 12.40" style="margin-top:9px"></textarea><div class="row" style="margin-top:9px"><button id="saveRounds">Save pasted history</button><button class="secondary" id="clearInput">Clear pasted history</button></div></details><div class="status" id="saveStatus">Enter one or two completed results. Saved results stay in your history.</div></section>
 <section class="card span4"><h2>Analysis controls</h2><label class="small" for="window">Rounds to analyze</label><input id="window" type="number" min="5" max="500" value="50" style="margin:7px 0 12px"><button id="analyze" class="secondary">Analyze saved rounds</button><p class="small" style="margin-bottom:0">The analysis uses rounds saved in this browser.</p></section>
 <section class="card span12"><h2>Statistical overview</h2><div class="metrics"><div class="metricbox"><div class="metric" id="count">—</div><div class="metric-label">Sample size</div></div><div class="metricbox"><div class="metric" id="mean">—</div><div class="metric-label">Mean multiplier</div></div><div class="metricbox"><div class="metric" id="median">—</div><div class="metric-label">Median multiplier</div></div><div class="metricbox"><div class="metric" id="std">—</div><div class="metric-label">Standard deviation</div></div></div><div id="distribution" style="margin-top:18px"><p class="small">Sign in and save completed rounds to see distribution.</p></div></section>
-<section class="card span12"><h2>Next-round analysis desk</h2><div class="row" style="justify-content:space-between"><div><div class="metric" id="outlookHeadline">Waiting for round history</div><div class="small" id="outlookSub">Add at least 30 completed rounds to calculate a historical reference.</div></div><div class="pill">HISTORICAL MODEL • NOT A LIVE PREDICTION</div></div><div class="outlook-grid" id="outlookGrid"><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">Below 2x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">2x–4.99x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">5x–9.99x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">10x+</div></div></div><p class="small" id="outlookWarning" style="margin-bottom:0">These percentages summarize the selected past sample. They are not probabilities guaranteed for the next round and do not identify a safe entry point.</p></section>
-
 <section class="card span6"><h2>RTP probability calculator</h2><label class="small">Target cash-out multiplier</label><input id="targetX" type="number" min="1" step="0.01" value="2"><label class="small">Assumed RTP (%)</label><input id="rtpPct" type="number" min="1" max="100" step="0.1" value="97" style="margin-top:8px"><button id="calcOdds" style="margin-top:10px">Calculate probability</button><div class="metric" id="oddsOut" style="margin-top:12px">48.50%</div><div class="small" id="oddsNote">Illustrative model: RTP ÷ target multiplier.</div></section>
 <section class="card span6"><h2>Expected-value calculator</h2><label class="small">Stake amount</label><input id="stakeEV" type="number" min="0" step="0.01" value="100"><label class="small">Cash-out target</label><input id="targetEV" type="number" min="1" step="0.01" value="2" style="margin-top:8px"><button id="calcEV" style="margin-top:10px">Calculate expected return</button><div class="metric" id="evOut" style="margin-top:12px">−3.00</div><div class="small" id="evNote">Uses the selected RTP assumption; excludes bonuses and game-specific rules.</div></section>
 <section class="card span12"><h2>SHA-512 completed-round checker (experimental)</h2><p class="small">Paste a revealed SHA-512 hash. This checks the proposed 13-hex-character / 52-bit / 97%-RTP reconstruction only. It is not an official Spribe verifier unless Spribe confirms the exact conversion and inputs.</p><label class="small">SHA-512 hash (128 hexadecimal characters)</label><input id="hashInput" placeholder="Paste completed-round SHA-512 hash"><button id="verifyHash" style="margin-top:10px">Check reconstructed multiplier</button><div class="metric" id="hashOut" style="margin-top:12px">—</div><div class="small" id="hashNote">No hash checked.</div></section>
@@ -57,19 +58,30 @@ function loadRounds(){
  render();
 }
 $('clearInput').onclick=()=>$('roundInput').value='';
-$('saveRounds').onclick=()=>{
- const vals=$('roundInput').value.split(/[\s,;]+/).map(x=>Number(x.replace(/x$/i,''))).filter(n=>Number.isFinite(n));
- if(!vals.length||vals.some(n=>n<1))return status('saveStatus','Enter valid multipliers of 1.00 or higher.');
+$('clearTwoRounds').onclick=()=>{$('roundOne').value='';$('roundTwo').value=''};
+function addCompletedValues(vals){
+ if(!vals.length||vals.some(n=>!Number.isFinite(n)||n<1))return status('saveStatus','Enter valid multipliers of 1.00 or higher.');
  const rows=vals.map(multiplier=>({multiplier,source:'manual',observed_at:new Date().toISOString()}));
  rounds=[...rows,...rounds].slice(0,5000);
  try { localStorage.setItem(STORAGE_KEY,JSON.stringify(rounds)); }
- catch(e){ return status('saveStatus','Browser storage is full or unavailable. Export or remove some history before adding more.'); }
- $('roundInput').value='';status('saveStatus',vals.length+' completed rounds saved on this device.');render();
+ catch(e){ return status('saveStatus','Browser storage is full or unavailable.'); }
+ render();status('saveStatus',vals.length+' completed round(s) saved. Your previous history was kept.');
+}
+$('saveTwoRounds').onclick=()=>{
+ const vals=['roundOne','roundTwo'].map(id=>$(id).value.trim()).filter(Boolean).map(Number);
+ if(!vals.length)return status('saveStatus','Enter at least one completed round result.');
+ if(vals.some(n=>!Number.isFinite(n)||n<1))return status('saveStatus','Each result must be 1.00x or higher.');
+ addCompletedValues(vals);$('roundOne').value='';$('roundTwo').value='';
+};
+$('saveRounds').onclick=()=>{
+ const vals=$('roundInput').value.split(/[\s,;]+/).map(x=>Number(x.replace(/x$/i,''))).filter(n=>Number.isFinite(n));
+ if(!vals.length||vals.some(n=>n<1))return status('saveStatus','Enter valid multipliers of 1.00 or higher.');
+ addCompletedValues(vals);$('roundInput').value='';
 };
 function render(){
  const vals=rounds.map(r=>Number(r.multiplier)).filter(Number.isFinite);
  $('history').innerHTML=vals.slice(0,40).map(n=>'<span class="chip '+chipClass(n)+'">'+fmt(n)+'</span>').join('')||'<span class="small">No rounds loaded.</span>';
- if(!vals.length){$('count').textContent='0';$('mean').textContent='—';$('median').textContent='—';$('std').textContent='—';$('distribution').innerHTML='<p class="small">Save completed rounds to calculate statistics.</p>';return}
+ if(!vals.length){$('count').textContent='0';$('mean').textContent='—';$('median').textContent='—';$('std').textContent='—';$('distribution').innerHTML='<p class="small">Save completed rounds to calculate statistics.</p>';$('topBand').textContent='—';$('topBandRate').textContent='—';$('outlookHeadline').textContent='Waiting for round history';$('outlookSub').textContent='Add completed rounds to see historical frequencies.';return}
  const data=vals.slice(0,Math.max(5,Math.min(500,Number($('window').value)||50)));
  const sorted=[...data].sort((a,b)=>a-b),mean=data.reduce((a,b)=>a+b,0)/data.length,median=sorted.length%2?sorted[(sorted.length-1)/2]:(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2;
  const variance=data.reduce((s,n)=>s+(n-mean)**2,0)/data.length,std=Math.sqrt(variance);
@@ -81,6 +93,7 @@ function render(){
  $('outlookHeadline').textContent=data.length>=30?'Historical reference calculated':'Building the sample';
  $('outlookSub').textContent=data.length+' most recent saved rounds • '+(data.length>=100?'100+ round sample':'30+ rounds recommended; 100+ preferred')+'.';
  $('outlookGrid').innerHTML=groups.map(([label,k],i)=>{const p=k/data.length*100,ci=wilson(k,data.length);return '<div class="outlook-tile"><div class="outlook-pct">'+p.toFixed(1)+'%</div><div class="outlook-name">'+names[i]+'</div><div class="confidence">95% sampling interval: '+ci[0].toFixed(1)+'–'+ci[1].toFixed(1)+'%</div></div>'}).join('');
+ const topIndex=groups.reduce((best,g,i)=>g[1]>groups[best][1]?i:best,0);$('topBand').textContent=names[topIndex];$('topBandRate').textContent=(groups[topIndex][1]/data.length*100).toFixed(1)+'%';
  $('outlookWarning').textContent=data.length<30?'Small samples are highly uncertain. Add more accurately ordered completed rounds. Even large samples do not guarantee the next round follows these frequencies.':'Historical band frequencies with approximate 95% Wilson intervals. This interval describes sampling uncertainty in the past sample, not a forecast interval for the next round. Independent random rounds need not follow recent streaks.';
 
  const low=groups[0][1]/data.length*100,high=groups[3][1]/data.length*100;
@@ -138,7 +151,7 @@ $('runBacktest').onclick=async()=>{
  let runs=1;for(let i=1;i<binary.length;i++)if(binary[i]!==binary[i-1])runs++;
  const expected=1+2*n0*n1/(n0+n1),variance=(2*n0*n1*(2*n0*n1-n0-n1))/(((n0+n1)**2)*(n0+n1-1));
  const z=variance>0?(runs-expected)/Math.sqrt(variance):0;
- $('btN').textContent=tests;$('btAcc').textContent=(correct/tests*100).toFixed(1)+'%';$('btBase').textContent=(baseline*100).toFixed(1)+'%';$('runsZ').textContent=z.toFixed(2);
+ $('btN').textContent=tests;$('btAcc').textContent=(correct/tests*100).toFixed(1)+'%';$('btBase').textContent=(baseline*100).toFixed(1)+'%';$('runsZ').textContent=z.toFixed(2); $('dashboardAccuracy').textContent=(correct/tests*100).toFixed(1)+'%';$('dashboardTests').textContent=tests;
  $('btNote').textContent='Walk-forward transition-model accuracy '+(correct/tests*100).toFixed(1)+'% versus rolling majority-band baseline '+(baseline*100).toFixed(1)+'%. Transition model uses only prior 100 rounds; if its previous-band row is empty it falls back to the training majority. Runs-test Z='+z.toFixed(2)+' for below-2x versus 2x+ sequence. These are retrospective diagnostics; a small sample, nonstationarity and multiple testing can mislead. A score near the baseline is not predictive edge.';
 };
 
