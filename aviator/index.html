@@ -30,7 +30,12 @@ button{border:0;border-radius:10px;padding:11px 15px;background:var(--cyan);colo
 <section class="card span8"><h2>Enter completed rounds</h2><textarea id="roundInput" placeholder="Example: 1.24, 2.10, 1.03, 5.60, 12.40"></textarea><div class="row" style="margin-top:10px"><button id="saveRounds" disabled>Save round history</button><button class="secondary" id="clearInput">Clear</button></div><div class="status" id="saveStatus">Sign in before saving data.</div></section>
 <section class="card span4"><h2>Analysis controls</h2><label class="small" for="window">Rounds to analyze</label><input id="window" type="number" min="5" max="500" value="50" style="margin:7px 0 12px"><button id="analyze" class="secondary" disabled>Analyze saved rounds</button><p class="small" style="margin-bottom:0">The analysis uses only rounds saved to your account.</p></section>
 <section class="card span12"><h2>Statistical overview</h2><div class="metrics"><div class="metricbox"><div class="metric" id="count">—</div><div class="metric-label">Sample size</div></div><div class="metricbox"><div class="metric" id="mean">—</div><div class="metric-label">Mean multiplier</div></div><div class="metricbox"><div class="metric" id="median">—</div><div class="metric-label">Median multiplier</div></div><div class="metricbox"><div class="metric" id="std">—</div><div class="metric-label">Standard deviation</div></div></div><div id="distribution" style="margin-top:18px"><p class="small">Sign in and save completed rounds to see distribution.</p></div></section>
-<section class="card span12"><h2>Advanced sequence diagnostics</h2><div class="metrics"><div class="metricbox"><div class="metric" id="lagCorr">—</div><div class="metric-label">Lag-1 correlation</div></div><div class="metricbox"><div class="metric" id="longestRun">—</div><div class="metric-label">Longest below-2x run</div></div><div class="metricbox"><div class="metric" id="recentLow">—</div><div class="metric-label">Latest 20 below-2x</div></div><div class="metricbox"><div class="metric" id="overallLow">—</div><div class="metric-label">Selected sample below-2x</div></div></div><div id="diagnosticText" class="small" style="margin-top:13px">Load at least 20 rounds for sequence diagnostics.</div></section>\n<section class="card span6"><h2>Recent saved rounds</h2><div class="history" id="history"><span class="small">No rounds loaded.</span></div></section>
+
+<section class="card span6"><h2>RTP probability calculator</h2><label class="small">Target cash-out multiplier</label><input id="targetX" type="number" min="1" step="0.01" value="2"><label class="small">Assumed RTP (%)</label><input id="rtpPct" type="number" min="1" max="100" step="0.1" value="97" style="margin-top:8px"><button id="calcOdds" style="margin-top:10px">Calculate probability</button><div class="metric" id="oddsOut" style="margin-top:12px">48.50%</div><div class="small" id="oddsNote">Illustrative model: RTP ÷ target multiplier.</div></section>
+<section class="card span6"><h2>Expected-value calculator</h2><label class="small">Stake amount</label><input id="stakeEV" type="number" min="0" step="0.01" value="100"><label class="small">Cash-out target</label><input id="targetEV" type="number" min="1" step="0.01" value="2" style="margin-top:8px"><button id="calcEV" style="margin-top:10px">Calculate expected return</button><div class="metric" id="evOut" style="margin-top:12px">−3.00</div><div class="small" id="evNote">Uses the selected RTP assumption; excludes bonuses and game-specific rules.</div></section>
+<section class="card span12"><h2>SHA-512 completed-round checker (experimental)</h2><p class="small">Paste a revealed SHA-512 hash. This checks the proposed 13-hex-character / 52-bit / 97%-RTP reconstruction only. It is not an official Spribe verifier unless Spribe confirms the exact conversion and inputs.</p><label class="small">SHA-512 hash (128 hexadecimal characters)</label><input id="hashInput" placeholder="Paste completed-round SHA-512 hash"><button id="verifyHash" style="margin-top:10px">Check reconstructed multiplier</button><div class="metric" id="hashOut" style="margin-top:12px">—</div><div class="small" id="hashNote">No hash checked.</div></section>
+<section class="card span12"><h2>Historical backtest &amp; independence checks</h2><p class="small">Evaluates simple rolling-window frequency estimates against later saved outcomes. Requires at least 30 ordered rounds. It does not forecast future results.</p><button id="runBacktest" class="secondary">Run walk-forward backtest</button><div class="metrics" style="margin-top:12px"><div class="metricbox"><div class="metric" id="btN">—</div><div class="metric-label">Test rounds</div></div><div class="metricbox"><div class="metric" id="btAcc">—</div><div class="metric-label">Band classification accuracy</div></div><div class="metricbox"><div class="metric" id="runsZ">—</div><div class="metric-label">Runs-test Z score</div></div><div class="metricbox"><div class="metric" id="btBase">—</div><div class="metric-label">Majority-band baseline</div></div></div><div id="btNote" class="small" style="margin-top:12px">No backtest run yet.</div></section>
+\n<section class="card span12"><h2>Advanced sequence diagnostics</h2><div class="metrics"><div class="metricbox"><div class="metric" id="lagCorr">—</div><div class="metric-label">Lag-1 correlation</div></div><div class="metricbox"><div class="metric" id="longestRun">—</div><div class="metric-label">Longest below-2x run</div></div><div class="metricbox"><div class="metric" id="recentLow">—</div><div class="metric-label">Latest 20 below-2x</div></div><div class="metricbox"><div class="metric" id="overallLow">—</div><div class="metric-label">Selected sample below-2x</div></div></div><div id="diagnosticText" class="small" style="margin-top:13px">Load at least 20 rounds for sequence diagnostics.</div></section>\n<section class="card span6"><h2>Recent saved rounds</h2><div class="history" id="history"><span class="small">No rounds loaded.</span></div></section>
 <section class="card span6"><h2>What the numbers mean</h2><div id="insight" class="small">Once you load data, this panel will describe the sample without claiming to know the next result.</div></section>
 <section class="card span12"><div class="notice"><b>Important:</b> Aviator crash outcomes are designed to be unpredictable. Historical averages, streaks and distributions cannot reliably identify the next multiplier. Any band frequencies shown here describe past data only—not a guaranteed signal or betting advice. Set limits and never stake money you cannot afford to lose.</div></section>
 </div><footer>RIANDER AVIATOR • Private analytics workspace • Not affiliated with BetPawa or Spribe</footer>
@@ -98,6 +103,46 @@ $('analyze').onclick=async()=>{
  const {error}=await db.from('aviator_analysis_runs').insert({user_id:user.id,window_size:data.length,sample_count:data.length,mean_multiplier:mean,median_multiplier:median,stddev_multiplier:std,low_band_rate:data.filter(n=>n<2).length/data.length,high_band_rate:data.filter(n=>n>=10).length/data.length,analysis:{bands:{under_2x:data.filter(n=>n<2).length,'2x_to_5x':data.filter(n=>n>=2&&n<5).length,'5x_to_10x':data.filter(n=>n>=5&&n<10).length,'10x_plus':data.filter(n=>n>=10).length},note:'Descriptive statistics only; not a forecast.'}});
  status('saveStatus',error?'Analysis save failed: '+error.message:'Analysis calculated and saved to your account.');
 };
-db.auth.onAuthStateChange(()=>setTimeout(refreshAuth,0));
+
+function calcOdds(){
+ const t=Number($('targetX').value),r=Number($('rtpPct').value)/100;
+ if(!(t>=1&&r>0&&r<=1)){ $('oddsOut').textContent='—';$('oddsNote').textContent='Enter target ≥1 and RTP between 0 and 100.';return}
+ const p=Math.min(1,r/t);$('oddsOut').textContent=(p*100).toFixed(3)+'%';
+ $('oddsNote').textContent='Illustrative chance of reaching '+t.toFixed(2)+'x under the assumed '+(r*100).toFixed(1)+'% RTP model. Not an official live probability feed.';
+}
+function calcEV(){
+ const s=Number($('stakeEV').value),t=Number($('targetEV').value),r=Number($('rtpPct').value)/100;
+ if(!(s>=0&&t>=1&&r>0&&r<=1)){ $('evOut').textContent='—';return}
+ const p=Math.min(1,r/t),net=p*s*(t-1)-(1-p)*s;
+ $('evOut').textContent=(net>=0?'+':'')+net.toFixed(2);
+ $('evNote').textContent='Modelled net expected value per '+s.toFixed(2)+' stake: '+net.toFixed(2)+'. Long-run theoretical return = '+(r*100).toFixed(1)+'% of stake under these assumptions.';
+}
+$('calcOdds').onclick=calcOdds;$('calcEV').onclick=calcEV;calcOdds();calcEV();
+$('verifyHash').onclick=()=>{
+ const h=$('hashInput').value.trim().toLowerCase();
+ if(!/^[0-9a-f]{128}$/.test(h)){ $('hashOut').textContent='Invalid hash';$('hashNote').textContent='A SHA-512 digest must contain exactly 128 hexadecimal characters.';return}
+ const first=h.slice(0,13),v=Number.parseInt(first,16),u=v/4503599627370496;
+ const m=Math.max(1,Math.floor(97/(1-u)))/100;
+ $('hashOut').textContent=m.toFixed(2)+'x';
+ $('hashNote').textContent='Reconstructed from first 13 hex digits ('+first+'). Experimental community formula; verify against an official disclosed round before relying on it.';
+};
+$('runBacktest').onclick=async()=>{
+ const seq=rounds.map(r=>Number(r.multiplier)).filter(Number.isFinite).reverse();
+ if(seq.length<30){$('btNote').textContent='Need at least 30 saved rounds in chronological order.';return}
+ const classify=n=>n<2?0:n<5?1:n<10?2:3,counts=[0,0,0,0];let correct=0,tests=0;
+ for(let i=20;i<seq.length;i++){
+  const train=seq.slice(Math.max(0,i-100),i),freq=[0,0,0,0];train.forEach(v=>freq[classify(v)]++);
+  let guess=0;for(let j=1;j<4;j++)if(freq[j]>freq[guess])guess=j;
+  if(classify(seq[i])===guess)correct++;tests++;counts[classify(seq[i])]++;
+ }
+ const total=counts.reduce((a,b)=>a+b,0),baseline=Math.max(...counts)/total;
+ const binary=seq.map(v=>v<2?0:1),n0=binary.filter(v=>v===0).length,n1=binary.length-n0;
+ let runs=1;for(let i=1;i<binary.length;i++)if(binary[i]!==binary[i-1])runs++;
+ const expected=1+2*n0*n1/(n0+n1),variance=(2*n0*n1*(2*n0*n1-n0-n1))/(((n0+n1)**2)*(n0+n1-1));
+ const z=variance>0?(runs-expected)/Math.sqrt(variance):0;
+ $('btN').textContent=tests;$('btAcc').textContent=(correct/tests*100).toFixed(1)+'%';$('btBase').textContent=(baseline*100).toFixed(1)+'%';$('runsZ').textContent=z.toFixed(2);
+ $('btNote').textContent='Walk-forward majority-band accuracy '+(correct/tests*100).toFixed(1)+'% versus a full-test majority-band reference of '+(baseline*100).toFixed(1)+'%. Runs-test Z='+z.toFixed(2)+' for below-2x versus 2x+ sequence. These are retrospective diagnostics; a small sample, nonstationarity and multiple testing can mislead. A score near the baseline is not predictive edge.';
+};
+\ndb.auth.onAuthStateChange(()=>setTimeout(refreshAuth,0));
 $('connection').textContent='DATABASE • READY';refreshAuth();
 </script></body></html>
