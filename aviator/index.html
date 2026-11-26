@@ -143,9 +143,12 @@ $('runBacktest').onclick=async()=>{
  if(seq.length<30){$('btNote').textContent='Need at least 30 saved rounds in chronological order.';return}
  const classify=n=>n<2?0:n<5?1:n<10?2:3;let correct=0,baselineCorrect=0,tests=0;
  for(let i=20;i<seq.length;i++){
-  const train=seq.slice(Math.max(0,i-100),i),freq=[0,0,0,0];train.forEach(v=>freq[classify(v)]++);
-  let guess=0;for(let j=1;j<4;j++)if(freq[j]>freq[guess])guess=j;
-  const actual=classify(seq[i]);if(actual===guess)correct++;if(actual===guess)baselineCorrect++;tests++;
+  const start=Math.max(0,i-100),train=seq.slice(start,i),freq=[0,0,0,0],trans=Array.from({length:4},()=>[0,0,0,0]);train.forEach(v=>freq[classify(v)]++);
+  for(let j=1;j<train.length;j++)trans[classify(train[j-1])][classify(train[j])]++;
+  let baselineGuess=0;for(let j=1;j<4;j++)if(freq[j]>freq[baselineGuess])baselineGuess=j;
+  const previous=classify(seq[i-1]),row=trans[previous];let modelGuess=baselineGuess;
+  if(row.reduce((a,b)=>a+b,0)>0){modelGuess=0;for(let j=1;j<4;j++)if(row[j]>row[modelGuess])modelGuess=j}
+  const actual=classify(seq[i]);if(actual===modelGuess)correct++;if(actual===baselineGuess)baselineCorrect++;tests++;
  }
  const baseline=baselineCorrect/tests;
  const binary=seq.map(v=>v<2?0:1),n0=binary.filter(v=>v===0).length,n1=binary.length-n0;
@@ -153,7 +156,7 @@ $('runBacktest').onclick=async()=>{
  const expected=1+2*n0*n1/(n0+n1),variance=(2*n0*n1*(2*n0*n1-n0-n1))/(((n0+n1)**2)*(n0+n1-1));
  const z=variance>0?(runs-expected)/Math.sqrt(variance):0;
  $('btN').textContent=tests;$('btAcc').textContent=(correct/tests*100).toFixed(1)+'%';$('btBase').textContent=(baseline*100).toFixed(1)+'%';$('runsZ').textContent=z.toFixed(2);
- $('btNote').textContent='Walk-forward majority-band accuracy '+(correct/tests*100).toFixed(1)+'% versus a rolling training-window majority-band reference of '+(baseline*100).toFixed(1)+'%. Runs-test Z='+z.toFixed(2)+' for below-2x versus 2x+ sequence. These are retrospective diagnostics; a small sample, nonstationarity and multiple testing can mislead. A score near the baseline is not predictive edge.';
+ $('btNote').textContent='Walk-forward transition-model accuracy '+(correct/tests*100).toFixed(1)+'% versus rolling majority-band baseline '+(baseline*100).toFixed(1)+'%. Transition model uses only prior 100 rounds; if its previous-band row is empty it falls back to the training majority. Runs-test Z='+z.toFixed(2)+' for below-2x versus 2x+ sequence. These are retrospective diagnostics; a small sample, nonstationarity and multiple testing can mislead. A score near the baseline is not predictive edge.';
 };
 
 db.auth.onAuthStateChange(()=>setTimeout(refreshAuth,0));
