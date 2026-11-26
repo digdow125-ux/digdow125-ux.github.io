@@ -22,13 +22,13 @@ button{border:0;border-radius:10px;padding:11px 15px;background:var(--cyan);colo
 .status{font-size:13px;color:var(--muted);margin-top:9px;min-height:18px}.hidden{display:none!important}footer{margin-top:18px;color:var(--muted);font-size:11px;text-align:center}
 </style></head>
 <body><main class="wrap">
-<div class="top"><div class="brand">RIANDER <span>AVIATOR</span></div><div class="pill" id="connection">DATABASE • CONNECTING</div></div>
+<div class="top"><div class="brand">RIANDER <span>AVIATOR</span></div><div class="pill" id="connection">LOCAL MODE • READY</div></div>
 <h1>Read the history.<br><em>Measure the pattern.</em></h1>
 <p class="sub">A private round-history workspace with descriptive statistics, distribution analysis and honest backtesting. Enter completed multipliers manually; this app does not connect to BetPawa or see future rounds.</p>
 <div class="grid">
-<section class="card span12" id="authCard"><h2>Account access</h2><div class="row"><input id="email" type="email" placeholder="Email address" autocomplete="email"><input id="password" type="password" placeholder="Password" autocomplete="current-password"></div><div class="row" style="margin-top:10px"><button id="signIn">Sign in</button><button class="secondary" id="signUp">Create account</button><button class="secondary" id="googleSignIn">Continue with Google</button><button class="secondary" id="guestSignIn">Continue as guest</button><button class="secondary hidden" id="signOut">Sign out</button></div><div class="status" id="authStatus">Create an account to save your own round history securely.</div></section>
-<section class="card span8"><h2>Enter completed rounds</h2><textarea id="roundInput" placeholder="Example: 1.24, 2.10, 1.03, 5.60, 12.40"></textarea><div class="row" style="margin-top:10px"><button id="saveRounds" disabled>Save round history</button><button class="secondary" id="clearInput">Clear</button></div><div class="status" id="saveStatus">Sign in before saving data.</div></section>
-<section class="card span4"><h2>Analysis controls</h2><label class="small" for="window">Rounds to analyze</label><input id="window" type="number" min="5" max="500" value="50" style="margin:7px 0 12px"><button id="analyze" class="secondary" disabled>Analyze saved rounds</button><p class="small" style="margin-bottom:0">The analysis uses only rounds saved to your account.</p></section>
+<section class="card span12"><h2>Ready to use — no account required</h2><p class="small">RIANDER AVIATOR is running in local mode. Your entered rounds are saved only in this browser on this device. They are not uploaded to a server or synced to other devices.</p></section>
+<section class="card span8"><h2>Enter completed rounds</h2><textarea id="roundInput" placeholder="Example: 1.24, 2.10, 1.03, 5.60, 12.40"></textarea><div class="row" style="margin-top:10px"><button id="saveRounds">Save round history</button><button class="secondary" id="clearInput">Clear</button></div><div class="status" id="saveStatus">Enter completed rounds and save them on this device.</div></section>
+<section class="card span4"><h2>Analysis controls</h2><label class="small" for="window">Rounds to analyze</label><input id="window" type="number" min="5" max="500" value="50" style="margin:7px 0 12px"><button id="analyze" class="secondary">Analyze saved rounds</button><p class="small" style="margin-bottom:0">The analysis uses rounds saved in this browser.</p></section>
 <section class="card span12"><h2>Statistical overview</h2><div class="metrics"><div class="metricbox"><div class="metric" id="count">—</div><div class="metric-label">Sample size</div></div><div class="metricbox"><div class="metric" id="mean">—</div><div class="metric-label">Mean multiplier</div></div><div class="metricbox"><div class="metric" id="median">—</div><div class="metric-label">Median multiplier</div></div><div class="metricbox"><div class="metric" id="std">—</div><div class="metric-label">Standard deviation</div></div></div><div id="distribution" style="margin-top:18px"><p class="small">Sign in and save completed rounds to see distribution.</p></div></section>
 <section class="card span12"><h2>Next-round analysis desk</h2><div class="row" style="justify-content:space-between"><div><div class="metric" id="outlookHeadline">Waiting for round history</div><div class="small" id="outlookSub">Add at least 30 completed rounds to calculate a historical reference.</div></div><div class="pill">HISTORICAL MODEL • NOT A LIVE PREDICTION</div></div><div class="outlook-grid" id="outlookGrid"><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">Below 2x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">2x–4.99x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">5x–9.99x</div></div><div class="outlook-tile"><div class="outlook-pct">—</div><div class="outlook-name">10x+</div></div></div><p class="small" id="outlookWarning" style="margin-bottom:0">These percentages summarize the selected past sample. They are not probabilities guaranteed for the next round and do not identify a safe entry point.</p></section>
 
@@ -44,41 +44,28 @@ button{border:0;border-radius:10px;padding:11px 15px;background:var(--cyan);colo
 </div><footer>RIANDER AVIATOR • Private analytics workspace • Not affiliated with BetPawa or Spribe</footer>
 </main>
 <script>
-const SUPABASE_URL='https://pihiuohirrpfdeiopbbr.supabase.co';
-const SUPABASE_KEY='sb_publishable_cvpRhJrOuI-htGomshMlVw_Dhag6WAt';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let user=null, rounds=[];
+const STORAGE_KEY='riander_aviator_rounds_v1';
+let rounds=[];
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n).toFixed(2)+'x';
 function status(id,msg){$(id).textContent=msg}
 function band(n){return n<2?'under_2x':n<5?'2x_to_5x':n<10?'5x_to_10x':'10x_plus'}
 function chipClass(n){return n<2?'low':n<5?'mid':'high'}
-async function refreshAuth(){
- const {data:{session}}=await db.auth.getSession(); user=session?.user||null;
- $('connection').textContent=user?'DATABASE • SIGNED IN':'DATABASE • SIGNED OUT';
- $('signOut').classList.toggle('hidden',!user);$('saveRounds').disabled=!user;$('analyze').disabled=!user;
- status('authStatus',user?'Signed in as '+user.email:'Create an account or sign in to continue.');
- if(user) await loadRounds();
+function loadRounds(){
+ try { const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); rounds=Array.isArray(saved)?saved:[]; }
+ catch(e){ rounds=[]; status('saveStatus','Could not read local history. You can still enter new rounds.'); }
+ render();
 }
-$('signUp').onclick=async()=>{const email=$('email').value.trim(),password=$('password').value;if(!email||password.length<8)return status('authStatus','Enter an email and password with at least 8 characters.');const {error}=await db.auth.signUp({email,password});status('authStatus',error?error.message:'Account created. Check your email if confirmation is required, then sign in.')};
-$('googleSignIn').onclick=async()=>{status('authStatus','Opening Google sign-in…');const {error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://digdow125-ux.github.io/aviator/'}});if(error)status('authStatus','Google sign-in error: '+error.message)};
-$('guestSignIn').onclick=async()=>{status('authStatus','Creating a temporary guest session…');const {error}=await db.auth.signInAnonymously();if(error){status('authStatus','Guest sign-in is not enabled yet. In Supabase, enable Anonymous Sign-Ins under Authentication → Providers. Details: '+error.message);return}status('authStatus','You are in as a guest. Save your history on this device; do not sign out or clear browser data until you create a permanent account.');await refreshAuth()};
-$('signIn').onclick=async()=>{const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});status('authStatus',error?error.message:'Signed in. Loading your history…');if(!error)await refreshAuth()};
-$('signOut').onclick=async()=>{await db.auth.signOut();rounds=[];render();await refreshAuth()};
 $('clearInput').onclick=()=>$('roundInput').value='';
-$('saveRounds').onclick=async()=>{
- if(!user)return;const vals=$('roundInput').value.split(/[\s,;]+/).map(x=>Number(x.replace(/x$/i,''))).filter((n,i,a)=>a[i]!==undefined&&Number.isFinite(n));
+$('saveRounds').onclick=()=>{
+ const vals=$('roundInput').value.split(/[\s,;]+/).map(x=>Number(x.replace(/x$/i,''))).filter(n=>Number.isFinite(n));
  if(!vals.length||vals.some(n=>n<1))return status('saveStatus','Enter valid multipliers of 1.00 or higher.');
- const rows=vals.map(multiplier=>({user_id:user.id,multiplier,source:'manual',observed_at:new Date().toISOString()}));
- const {error}=await db.from('aviator_rounds').insert(rows);
- if(error)return status('saveStatus',error.message);
- $('roundInput').value='';status('saveStatus',vals.length+' completed rounds saved.');await loadRounds();
+ const rows=vals.map(multiplier=>({multiplier,source:'manual',observed_at:new Date().toISOString()}));
+ rounds=[...rows,...rounds].slice(0,5000);
+ try { localStorage.setItem(STORAGE_KEY,JSON.stringify(rounds)); }
+ catch(e){ return status('saveStatus','Browser storage is full or unavailable. Export or remove some history before adding more.'); }
+ $('roundInput').value='';status('saveStatus',vals.length+' completed rounds saved on this device.');render();
 };
-async function loadRounds(){
- const {data,error}=await db.from('aviator_rounds').select('id,multiplier,observed_at,created_at').eq('user_id',user.id).order('id',{ascending:false}).limit(500);
- if(error){status('saveStatus',error.message);return}
- rounds=data||[];render();
-}
 function render(){
  const vals=rounds.map(r=>Number(r.multiplier)).filter(Number.isFinite);
  $('history').innerHTML=vals.slice(0,40).map(n=>'<span class="chip '+chipClass(n)+'">'+fmt(n)+'</span>').join('')||'<span class="small">No rounds loaded.</span>';
@@ -107,13 +94,9 @@ function render(){
  $('longestRun').textContent=longest+' rounds';$('recentLow').textContent=latestLow.toFixed(1)+'%';$('overallLow').textContent=low.toFixed(1)+'%';
  $('diagnosticText').textContent=data.length<20?'Add more rounds for more stable diagnostics. Lag correlation and streaks describe this sample only.':('The latest 20 rounds have '+latestLow.toFixed(1)+'% below 2x versus '+low.toFixed(1)+'% across the selected sample. Lag-1 correlation is '+corr.toFixed(2)+'. These statistics can flag unusual historical dependence or changes in the sample, but do not establish a reliable next-round signal. Use at least several hundred accurately ordered rounds and out-of-sample testing before drawing conclusions.');
 }
-$('analyze').onclick=async()=>{
- if(!user||!rounds.length)return status('saveStatus','Save some completed rounds first.');
- const data=rounds.slice(0,Math.max(5,Math.min(500,Number($('window').value)||50))).map(r=>Number(r.multiplier));
- const sorted=[...data].sort((a,b)=>a-b),mean=data.reduce((a,b)=>a+b,0)/data.length,median=sorted.length%2?sorted[(sorted.length-1)/2]:(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2;
- const std=Math.sqrt(data.reduce((s,n)=>s+(n-mean)**2,0)/data.length);
- const {error}=await db.from('aviator_analysis_runs').insert({user_id:user.id,window_size:data.length,sample_count:data.length,mean_multiplier:mean,median_multiplier:median,stddev_multiplier:std,low_band_rate:data.filter(n=>n<2).length/data.length,high_band_rate:data.filter(n=>n>=10).length/data.length,analysis:{bands:{under_2x:data.filter(n=>n<2).length,'2x_to_5x':data.filter(n=>n>=2&&n<5).length,'5x_to_10x':data.filter(n=>n>=5&&n<10).length,'10x_plus':data.filter(n=>n>=10).length},note:'Descriptive statistics only; not a forecast.'}});
- status('saveStatus',error?'Analysis save failed: '+error.message:'Analysis calculated and saved to your account.');
+$('analyze').onclick=()=>{
+ if(!rounds.length)return status('saveStatus','Save some completed rounds first.');
+ render();status('saveStatus','Analysis refreshed using your locally saved rounds.');
 };
 
 function calcOdds(){
@@ -159,6 +142,5 @@ $('runBacktest').onclick=async()=>{
  $('btNote').textContent='Walk-forward transition-model accuracy '+(correct/tests*100).toFixed(1)+'% versus rolling majority-band baseline '+(baseline*100).toFixed(1)+'%. Transition model uses only prior 100 rounds; if its previous-band row is empty it falls back to the training majority. Runs-test Z='+z.toFixed(2)+' for below-2x versus 2x+ sequence. These are retrospective diagnostics; a small sample, nonstationarity and multiple testing can mislead. A score near the baseline is not predictive edge.';
 };
 
-db.auth.onAuthStateChange(()=>setTimeout(refreshAuth,0));
-$('connection').textContent='DATABASE • READY';refreshAuth();
+$('connection').textContent='LOCAL MODE • READY';loadRounds();
 </script></body></html>
